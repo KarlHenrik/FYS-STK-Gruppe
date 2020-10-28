@@ -2,19 +2,45 @@
 import numpy as np
 
 class FFNN:
-    def __init__(self):
-        self._layers = []
+    def __init__(self, inputs):
+        self._inputs = inputs
+        self._theta = np.array([], dtype=object)
+        self._activations = []
+        self._diffs = []
+        self._a = []
+        self._layers = 0
         
-    def addLayer(self, neurons, activation, n_inputs = 0):
-        if (n_inputs == 0 or len(self._layers) != 0):
-            n_inputs = len(self._layers[-1].bias)
-        self._layers.append(self.Layer(n_inputs, neurons, activation))
+    def addLayer(self, neurons, activation):
+        if (self._layers == 0):
+            inputs = self._inputs
+        else:
+            inputs = len(self._theta[self._layers - 1][1])
+            
+        weights = np.random.randn(inputs, neurons)
+        bias = np.zeros(neurons) + 0.01
+        
+        theta = self._theta.tolist()
+        theta.append([weights, bias])
+        self._theta = np.array(theta, dtype=object)
+        
+        if activation == "sigmoid":
+            self._activations.append(self._sigmoid)
+            self._diffs.append(self._sigmoid_diff)
+            
+        self._layers += 1
         
     def feedForward(self, a):
-        for layer in self._layers:
-            a = layer.feed(a)
+        self._a = [a]
+        for i in range(self._layers):
+            weights = self._theta[i][0]
+            bias = self._theta[i][1]
+            #print(f"iteration {i}")
+            #print(f"w: {weights}")
+            #print(f"b : {bias}")
+            #print(f"a: {self._a[-1]}")
+            z = self._a[-1] @ weights + bias
+            self._a.append(self._activations[i](z))
             
-    
     def backProp(self, target, eta = 0.01):
         o_layer = self._layers[-1]
         err_output = o_layer.a_out - target.reshape(o_layer.a_out.shape)
@@ -27,22 +53,9 @@ class FFNN:
             layer.delta = layer.diff() * layer.weights.T @ self._layers[-(i + 1)].delta
             layer.weights -= eta * layer.delta @ layers_rev[i+2].a_out.T
             layer.bias -= eta * layer.delta
-        
-    class Layer:
-        def __init__(self, n_inputs, neurons, activation):
-            self.weights = np.random.randn(n_inputs, neurons)
-            self.bias = np.zeros(neurons) + 0.01
-            if activation == "sigmoid":
-                self._activation = self._sigmoid
-                self.diff = self._sigmoid_diff
-                
-        def feed(self, a_in):
-            z = a_in @ self.weights + self.bias
-            self.a_out = self._activation(z)
-            return self.a_out
-        
-        def _sigmoid(self, z):
+            
+    def _sigmoid(self, z):
             return 1 / (1 + np.exp(-z))
         
-        def _sigmoid_diff(self):
-            return self.a_out * (1 - self.a_out)
+    def _sigmoid_diff(self):
+        return self.a_out * (1 - self.a_out)
