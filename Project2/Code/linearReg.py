@@ -7,7 +7,7 @@ class LinearReg():
         self._lmda = lmda
         self._order = order
         self._p = int((order + 1) * (order + 2) / 2)
-        self._beta = np.random.randn(self._p)
+        self._beta = np.random.randn(self._p, 1)
         self._scaler = StandardScaler() #subtracts mean from each feature and divides by the standard deviation
         self._isFit = False
     

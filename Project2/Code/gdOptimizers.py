@@ -14,7 +14,7 @@ class GDOptimizers:
             self.optimizer = self.momentumSGD
             self._alpha = alpha
 
-    def SGD(self, X, z, theta, gradFunc, params):
+    def SGD(self, X, z, theta, gradFunc, params = {}):
         n_inputs = len(z)
         # del opp i minibatches
         data_indices = np.arange(n_inputs)
@@ -31,7 +31,7 @@ class GDOptimizers:
                 theta = theta - self._learning_rate * g
         return theta
     
-    def momentumSGD(self, X, z, theta, gradFunc, params):
+    def momentumSGD(self, X, z, theta, gradFunc, params = {}):
         n_inputs = len(z)
         # del opp i minibatches
         data_indices = np.arange(n_inputs)
