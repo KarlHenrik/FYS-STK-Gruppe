@@ -12,7 +12,8 @@ class SoftmaxReg():
         self._lmda = lmda
         
     def fit(self, x_train, y_train, sgd):
-        self._theta = sgd.optimizer(x_train, y_train, self._theta, self._gradient)  
+        self._theta = sgd.optimizer(x_train, y_train, self._theta, self._gradient)
+        #print((self._theta[0]).shape, (self._theta[1]).shape)
         return self.predict(x_train)
         
     def predict(self, x):
@@ -25,7 +26,8 @@ class SoftmaxReg():
         
         delta = (y - t) / t.shape[0]
         g[1] = np.sum(delta, axis = 0)
-        g[0] = x.T @ delta
+        #print((x.T).shape, delta.shape)
+        g[0] = x.T @ delta.T
         return g
     
     def _softmax(self, z):
