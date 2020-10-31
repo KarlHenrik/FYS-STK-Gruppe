@@ -11,7 +11,7 @@ class LinearReg():
         self._scaler = StandardScaler() #subtracts mean from each feature and divides by the standard deviation
         self._isFit = False
     
-    def designMatrix(self, x, y):
+    
         n = x.size
         X = np.zeros((n, self._p))
         feature = 0
