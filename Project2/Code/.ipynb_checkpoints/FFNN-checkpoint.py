@@ -75,7 +75,7 @@ class FFNN:
             self._zs.append(z)
             self._as.append(self._activations[i](z))
         
-    def _backProp(self, a_in, target, theta, params = {}):
+    def _backProp(self, a_in, target, theta):
         # setting up all outputs in the network
         self._feedForward(a_in)
         # setting up gradient "array"
@@ -86,7 +86,7 @@ class FFNN:
         g[self._layers - 1][0] = self._as[-2].T @ delta / n # weight gradient
         g[self._layers - 1][1] = np.mean(delta, axis = 0) # bias gradient
         if self._lmda > 0: # regularization
-            g[self._layers - 1][0] += theta[self._layers - 1][0] * self._lmda
+            g[self._layers - 1][0] += theta[self._layers - 1][0] * 2 * self._lmda
         # the rest of the layers
         for i in range(self._layers - 2, -1, -1): #from the second to last, to the first layer
             #theta[i+1][0] is layer i+1 weights. self._zs[i] is the input to layer i activation. self._as[i + 1] is the output of layer i activation
@@ -94,7 +94,7 @@ class FFNN:
             g[i][0] = self._as[i].T @ delta / n # weight gradient. self._as[i] is the input to layer i
             g[i][1] = np.mean(delta, axis = 0) # bias gradient
             if self._lmda > 0: # regularization
-                g[i][0] += theta[i][0] * self._lmda
+                g[i][0] += theta[i][0] * 2 * self._lmda
         return g
     
     def fit(self, a_in, target):
