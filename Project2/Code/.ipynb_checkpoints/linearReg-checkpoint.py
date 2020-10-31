@@ -22,7 +22,7 @@ class LinearReg():
         return X
     
     def gradient(self, X, z, beta, params):
-        return -2 * X.T @ (z - X @ beta) + params["lmda"] * 2 * beta
+        return -2 * X.T @ (z - X @ beta) / X.shape[0] + params["lmda"] * 2 * beta
     
     def fit(self, xy, z, sgd):
         x = xy[:, 0]
