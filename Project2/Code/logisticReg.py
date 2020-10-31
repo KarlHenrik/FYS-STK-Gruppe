@@ -2,19 +2,33 @@ import numpy as np
 
 class SoftmaxReg():
     
-    def __init__(self):
+    def __init__(self, n_in, n_out, lmda):
+        weights = np.random.randn(n_in, n_out)
+        bias = np.zeros([n_out,1]) + 0.01
+        self._theta = np.array([0,0], dtype=object)
+        self._theta[0] = weights
+        self._theta[1] = bias
+        self._g0 = self._theta * 0              # will be used for the gradient
+        self._lmda = lmda
         
-    def designMatrix(self, x, y):
+    def fit(self, x_train, y_train, sgd):
+        self._theta = sgd.optimizer(x_train, y_train, self._theta, self._gradient)  
+        return self.predict(x_train)
         
-    def fit(self, xy, z, sgd):
-        
-    def predict(self, xy):
-        
-    def score(self):
+    def predict(self, x):
+        y = self._softmax(self._theta[0].T @ x.T + self._theta[1])
+        return y
      
-    def cost(t, h, l=l, X=X, y=y, m=m):
-        cost = np.transpose(-y)@np.log(h) - np.transpose(1-y)@np.log(1-h) + (l/2)*np.transpose(t[1:])@t[1:]
-        cost = (1/m)*cost
-    return cost
+    def _gradient(self, x, t, theta):
+        g = self._g0
+        y = self._softmax(theta[0].T @ x.T + theta[1])
         
-       
+        delta = (y - t) / t.shape[0]
+        g[1] = np.sum(delta, axis = 0)
+        g[0] = x.T @ delta
+        return g
+    
+    def _softmax(self, z):
+        exps = np.exp(z)
+        return exps / np.sum(exps)
+    
