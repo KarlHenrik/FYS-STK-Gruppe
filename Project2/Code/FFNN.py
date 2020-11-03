@@ -99,7 +99,7 @@ class FFNN:
     
     def fit(self, a_in, target):
         self._theta = self._gd.optimizer(a_in, target, self._theta, self._backProp)
-        return self.predict(a_in)
+        return
     
     def predict(self, a_in):
         self._feedForward(a_in)
@@ -121,8 +121,8 @@ class FFNN:
         return 1
     
     def _softmax(self, z):
-        exps = np.exp(z)
-        return exps / np.sum(exps)
+        exps = np.exp(z - np.max(z))
+        return exps / np.sum(exps, axis=1, keepdims=True)
     
     def _relu(self, z):
         return z if z > 0 else 0

@@ -3,14 +3,16 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 class LinearReg():
-    def __init__(self, order, lmda):
+    def __init__(self, order, lmda, sgd):
         self._lmda = lmda
         self._order = order
+        self._sgd = sgd
         self._p = int((order + 1) * (order + 2) / 2)
         self._beta = np.random.randn(self._p, 1)
         self._scaler = StandardScaler() #subtracts mean from each feature and divides by the standard deviation
         self._isFit = False
         
+    def designMatrix(self, x, y):
         n = x.size
         X = np.zeros((n, self._p))
         feature = 0
@@ -23,7 +25,7 @@ class LinearReg():
     def _gradient(self, X, z, beta):
         return -2 * X.T @ (z - X @ beta) / X.shape[0] + self._lmda * 2 * beta
     
-    def fit(self, xy, z, sgd):
+    def fit(self, xy, z):
         x = xy[:, 0]
         y = xy[:, 1]
         X = self.designMatrix(x, y)
@@ -32,9 +34,9 @@ class LinearReg():
         X = self._scaler.transform(X)
         X[:, 0] = 1 # scaling removed the intercept terms
         
-        self._beta = sgd.optimizer(X, z, self._beta, self._gradient)
+        self._beta = self._sgd.optimizer(X, z, self._beta, self._gradient)
         self._isFit = True
-        return X @ self._beta
+        return
     
     def predict(self, xy):
         x = xy[:, 0]

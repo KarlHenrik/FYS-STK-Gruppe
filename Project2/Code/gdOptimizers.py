@@ -45,7 +45,7 @@ class GDOptimizers:
                 Xbatch = X[chosen_datapoints]
                 zbatch = z[chosen_datapoints]
                 # finding gradient
-                g = gradFunc(Xbatch, zbatch, theta, params)
+                g = gradFunc(Xbatch, zbatch, theta)
                 v = self._alpha * v + self._learning_rate * g
                 theta = theta - v
         return theta

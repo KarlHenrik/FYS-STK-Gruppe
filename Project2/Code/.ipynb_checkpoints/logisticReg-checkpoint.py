@@ -2,7 +2,7 @@ import numpy as np
 
 class SoftmaxReg():
     
-    def __init__(self, n_in, n_out, lmda):
+    def __init__(self, n_in, n_out, lmda, sgd):
         weights = np.random.randn(n_in, n_out)
         bias = np.zeros([1, n_out]) + 0.01
         self._theta = np.array([0,0], dtype=object)
@@ -10,10 +10,11 @@ class SoftmaxReg():
         self._theta[1] = bias
         self._g0 = self._theta * 0              # will be used for the gradient
         self._lmda = lmda
+        self._sgd = sgd
         
-    def fit(self, x, y, sgd):
-        self._theta = sgd.optimizer(x, y, self._theta, self._gradient)
-        return self.predict(x)
+    def fit(self, x, y):
+        self._theta = self._sgd.optimizer(x, y, self._theta, self._gradient)
+        return
         
     def predict(self, x):
         y = self._softmax(x @ self._theta[0] + self._theta[1])
