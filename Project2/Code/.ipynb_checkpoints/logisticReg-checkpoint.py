@@ -23,7 +23,6 @@ class SoftmaxReg():
     def _gradient(self, x, t, theta):
         g = self._g0
         y = self._softmax(x @ theta[0] + theta[1])
-
         delta = (y - t) / t.shape[0]
         g[0] = x.T @ delta + theta[0] * 2 * self._lmda
         g[1] = np.sum(delta, axis = 0)

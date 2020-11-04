@@ -39,7 +39,7 @@ class FFNN:
             self._activations.append(self._softmax)
             self._diffs.append(self._one_diff)
         else:
-            raise ValueError("Unsupported activation function.") # ADD SPECIFICS 
+            raise ValueError("Unsupported activation function.") # ADD SPECIFICS
             
         self._layers += 1
         
@@ -65,25 +65,25 @@ class FFNN:
             self._diffs[-1] = self._one_diff
             
         
-    def _feedForward(self, a_in):
+    def _feedForward(self, a_in, theta):
         self._as = [a_in] # _as[i] comes into layer i. is the output of layer i - 1
         self._zs = [] # _zs[i] comes into layer i activation
         for i in range(self._layers):
-            weights = self._theta[i][0]
-            bias = self._theta[i][1]
+            weights = theta[i][0]
+            bias = theta[i][1]
             z = self._as[-1] @ weights + bias
             self._zs.append(z)
             self._as.append(self._activations[i](z))
         
     def _backProp(self, a_in, target, theta):
         # setting up all outputs in the network
-        self._feedForward(a_in)
+        self._feedForward(a_in, theta)
         # setting up gradient "array"
         g = self._g0
         n = target.shape[0]
         # output layer
         delta = (self._as[-1] - target) * self._diffs[-1](self._zs[-1], self._as[-1]) / n # cost' * activation'
-        g[self._layers - 1][0] = a_in.T @ delta  # weight gradient
+        g[self._layers - 1][0] = self._as[-2].T @ delta  # weight gradient
         g[self._layers - 1][1] = np.sum(delta, axis = 0) # bias gradient
         if self._lmda > 0: # regularization
             g[self._layers - 1][0] += theta[self._layers - 1][0] * 2 * self._lmda
@@ -97,25 +97,12 @@ class FFNN:
                 g[i][0] += theta[i][0] * 2 * self._lmda
         return g
     
-    def _gradient(self, x, t, theta):
-        g = self._g0
-        y = self._softmax(x @ theta[0][0] + theta[0][1])
-
-        delta = (y - t) / t.shape[0]
-        g[0][0] = x.T @ delta + theta[0][0] * 2 * self._lmda
-        g[0][1] = np.sum(delta, axis = 0)
-        return g
-    
-    def fit2(self, a_in, target):
-        self._theta = self._gd.optimizer(a_in, target, self._theta, self._gradient)
-        return
-    
     def fit(self, a_in, target):
         self._theta = self._gd.optimizer(a_in, target, self._theta, self._backProp)
         return
     
     def predict(self, a_in):
-        self._feedForward(a_in)
+        self._feedForward(a_in, self._theta)
         return self._as[-1]
             
     # ---------- Activation functions and their derivative functions --------------
