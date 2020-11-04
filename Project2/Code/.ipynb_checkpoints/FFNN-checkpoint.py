@@ -84,7 +84,7 @@ class FFNN:
         # output layer
         delta = (self._as[-1] - target) * self._diffs[-1](self._zs[-1], self._as[-1]) / n # cost' * activation'
         g[self._layers - 1][0] = self._as[-2].T @ delta  # weight gradient
-        g[self._layers - 1][1] = np.sum(delta, axis = 0) # bias gradient
+        g[self._layers - 1][1] = np.sum(delta, axis = 0, keepdims=True) # bias gradient
         if self._lmda > 0: # regularization
             g[self._layers - 1][0] += theta[self._layers - 1][0] * 2 * self._lmda
         # the rest of the layers
@@ -92,7 +92,7 @@ class FFNN:
             #theta[i+1][0] is layer i+1 weights. self._zs[i] is the input to layer i activation. self._as[i + 1] is the output of layer i activation
             delta = delta @ theta[i+1][0].T * self._diffs[i](self._zs[i], self._as[i + 1])
             g[i][0] = self._as[i].T @ delta # weight gradient. self._as[i] is the input to layer i
-            g[i][1] = np.sum(delta, axis = 0) # bias gradient
+            g[i][1] = np.sum(delta, axis = 0, keepdims=True) # bias gradient
             if self._lmda > 0: # regularization
                 g[i][0] += theta[i][0] * 2 * self._lmda
         return g
