@@ -19,6 +19,7 @@ class GDOptimizers:
         # del opp i minibatches
         data_indices = np.arange(n_inputs)
         iterations = n_inputs // self._batch_size
+        np.random.seed(0)
         for i in range(self._epochs):
             for j in range(iterations):
                 # pick datapoints with replacement
@@ -28,6 +29,11 @@ class GDOptimizers:
                 zbatch = z[chosen_datapoints]
                 # finding gradient
                 g = gradFunc(Xbatch, zbatch, theta)
+                print(f"{i}, {j}")
+                if g.shape[0] == 2:
+                    print(g[1])
+                else:
+                    print(g[0][1])
                 theta = theta - self._learning_rate * g
         return theta
     

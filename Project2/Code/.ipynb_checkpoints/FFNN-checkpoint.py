@@ -80,11 +80,11 @@ class FFNN:
         self._feedForward(a_in)
         # setting up gradient "array"
         g = self._g0
-        n = a_in.shape[0]
+        n = target.shape[0]
         # output layer
         delta = (self._as[-1] - target) * self._diffs[-1](self._zs[-1], self._as[-1]) / n # cost' * activation'
-        g[self._layers - 1][0] = self._as[-2].T @ delta  # weight gradient
-        g[self._layers - 1][1] = np.sum(delta, axis = 0, keepdims=True) # bias gradient
+        g[self._layers - 1][0] = a_in.T @ delta  # weight gradient
+        g[self._layers - 1][1] = np.sum(delta, axis = 0) # bias gradient
         if self._lmda > 0: # regularization
             g[self._layers - 1][0] += theta[self._layers - 1][0] * 2 * self._lmda
         # the rest of the layers
@@ -92,10 +92,23 @@ class FFNN:
             #theta[i+1][0] is layer i+1 weights. self._zs[i] is the input to layer i activation. self._as[i + 1] is the output of layer i activation
             delta = delta @ theta[i+1][0].T * self._diffs[i](self._zs[i], self._as[i + 1])
             g[i][0] = self._as[i].T @ delta # weight gradient. self._as[i] is the input to layer i
-            g[i][1] = np.sum(delta, axis = 0, keepdims=True) # bias gradient
+            g[i][1] = np.sum(delta, axis = 0) # bias gradient
             if self._lmda > 0: # regularization
                 g[i][0] += theta[i][0] * 2 * self._lmda
         return g
+    
+    def _gradient(self, x, t, theta):
+        g = self._g0
+        y = self._softmax(x @ theta[0][0] + theta[0][1])
+
+        delta = (y - t) / t.shape[0]
+        g[0][0] = x.T @ delta + theta[0][0] * 2 * self._lmda
+        g[0][1] = np.sum(delta, axis = 0)
+        return g
+    
+    def fit2(self, a_in, target):
+        self._theta = self._gd.optimizer(a_in, target, self._theta, self._gradient)
+        return
     
     def fit(self, a_in, target):
         self._theta = self._gd.optimizer(a_in, target, self._theta, self._backProp)
