@@ -14,10 +14,10 @@ class FFNN:
         if (self._layers == 0):
             inputs = self._inputs
         else:
-            inputs = len(self._theta[self._layers - 1][1]) # number of nodes in previous layer
+            inputs = len(self._theta[self._layers - 1][1][0]) # number of nodes in previous layer
             
-        weights = np.random.randn(inputs, neurons)
-        bias = np.zeros(neurons) + 0.01
+        weights = np.random.randn(inputs, neurons) / inputs
+        bias = np.zeros((1, neurons)) + 0.01
         
         theta = self._theta.tolist()
         theta.append([weights, bias])
@@ -79,20 +79,20 @@ class FFNN:
         # setting up all outputs in the network
         self._feedForward(a_in)
         # setting up gradient "array"
-        g = np.copy(self._g0)
+        g = self._g0
         n = a_in.shape[0]
         # output layer
-        delta = (self._as[-1] - target) * self._diffs[-1](self._zs[-1], self._as[-1]) #(a - t) * sigma(z)'
-        g[self._layers - 1][0] = self._as[-2].T @ delta / n # weight gradient
-        g[self._layers - 1][1] = np.mean(delta, axis = 0) # bias gradient
+        delta = (self._as[-1] - target) * self._diffs[-1](self._zs[-1], self._as[-1]) / n # cost' * activation'
+        g[self._layers - 1][0] = self._as[-2].T @ delta  # weight gradient
+        g[self._layers - 1][1] = np.sum(delta, axis = 0, keepdims=True) # bias gradient
         if self._lmda > 0: # regularization
             g[self._layers - 1][0] += theta[self._layers - 1][0] * 2 * self._lmda
         # the rest of the layers
         for i in range(self._layers - 2, -1, -1): #from the second to last, to the first layer
             #theta[i+1][0] is layer i+1 weights. self._zs[i] is the input to layer i activation. self._as[i + 1] is the output of layer i activation
             delta = delta @ theta[i+1][0].T * self._diffs[i](self._zs[i], self._as[i + 1])
-            g[i][0] = self._as[i].T @ delta / n # weight gradient. self._as[i] is the input to layer i
-            g[i][1] = np.mean(delta, axis = 0) # bias gradient
+            g[i][0] = self._as[i].T @ delta # weight gradient. self._as[i] is the input to layer i
+            g[i][1] = np.sum(delta, axis = 0, keepdims=True) # bias gradient
             if self._lmda > 0: # regularization
                 g[i][0] += theta[i][0] * 2 * self._lmda
         return g
@@ -107,9 +107,9 @@ class FFNN:
             
     # ---------- Activation functions and their derivative functions --------------
     def _sigmoid(self, z):
-        return 1 / (1 + np.exp(-z))
-        #return np.where(z >= 0, 1 / (1 + np.exp(-z)), 
-        #                        np.exp(z) / (1 + np.exp(z)))
+        #return 1 / (1 + np.exp(-z))
+        return np.where(z >= 0, 1 / (1 + np.exp(-z)), 
+                                np.exp(z) / (1 + np.exp(z)))
         
     def _sigmoid_diff(self, z, a): # z is usual input, a is usual output
         return a * (1 - a)
@@ -121,17 +121,21 @@ class FFNN:
         return 1
     
     def _softmax(self, z):
-        exps = np.exp(z - np.max(z))
+        exps = np.exp(z - np.max(z, axis=1, keepdims=True))
         return exps / np.sum(exps, axis=1, keepdims=True)
     
     def _relu(self, z):
-        return z if z > 0 else 0
+        return np.where(z > 0, z, 
+                               0)
         
     def _relu_diff(self, z, a): # z is usual input, a is usual output
-        return 1 if z > 0 else 0
+        return np.where(z > 0, 1, 
+                               0)
     
     def _leakyrelu(self, z):
-        return z if z > 0 else 0.01 * z
+        return np.where(z > 0, z, 
+                               0.01 * z)
         
     def _leakyrelu_diff(self, z, a): # z is usual input, a is usual output
-        return 1 if z > 0 else 0.01
+        return np.where(z > 0, 1, 
+                               0.01)

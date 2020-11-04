@@ -30,6 +30,6 @@ class SoftmaxReg():
         return g
     
     def _softmax(self, z):
-        exps = np.exp(z - np.max(z))
+        exps = np.exp(z - np.max(z, axis=1, keepdims=True))
         return exps / np.sum(exps, axis=1, keepdims=True)
     
