@@ -58,8 +58,8 @@ class FFNN:
             raise ValueError("Softmax not supported for loss = \"mse\", try \"cross\"")
         if loss == "cross" and self._activations[-1] not in {self._softmax, self._sigmoid}:
             raise ValueError("Only Softmax and sigmoid are supported for output layer for loss = \"cross\"")
-        if loss == "cross" and self._activations[-1] == self._sigmoid and len(self._theta[self._layers - 1][1]) != 2:
-            raise ValueError("Sigmoid output layer with loss =\"cross\" is only supported for two outputs")
+        if loss == "cross" and self._activations[-1] == self._sigmoid and len(self._theta[self._layers - 1][1]) != 1:
+            raise ValueError("Sigmoid output layer with loss =\"cross\" is only supported for one output")
         # Changing sigmoid derivative if it is output and loss = "cross"
         if loss == "cross" and self._activations[-1] == self._sigmoid:
             self._diffs[-1] = self._one_diff
