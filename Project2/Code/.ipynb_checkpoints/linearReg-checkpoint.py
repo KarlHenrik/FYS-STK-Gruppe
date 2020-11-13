@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 class LinearReg():
-    def __init__(self, order, lmda, sgd):
+    def __init__(self, order, lmda, sgd, analytical = False):
         self._lmda = lmda
         self._order = order
         self._sgd = sgd
@@ -11,6 +11,8 @@ class LinearReg():
         self._beta = np.random.randn(self._p, 1)
         self._scaler = StandardScaler() #subtracts mean from each feature and divides by the standard deviation
         self._isFit = False
+        if analytical:
+            self.fit = self._ridgeFit
         
     def designMatrix(self, x, y):
         n = x.size
@@ -47,7 +49,7 @@ class LinearReg():
             X_test[:, 0] = 1 # scaling removed the intercept terms
         return X_test @ self._beta
     
-    def ridgeFit(self, xy, z): #in case we want to see what the "analytical" solution gives us
+    def _ridgeFit(self, xy, z): #in case we want to see what the "analytical" solution gives us
         x = xy[:, 0]
         y = xy[:, 1]
         X = self.designMatrix(x, y)
@@ -58,4 +60,4 @@ class LinearReg():
         
         self._beta = np.linalg.inv(X.T @ X + self._lmda * np.eye(self._p)) @ X.T @ z
         self._isFit = True
-        return X @ self._beta
+        return
