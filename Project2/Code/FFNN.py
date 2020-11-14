@@ -16,12 +16,12 @@ class FFNN:
         else:
             inputs = len(self._theta[self._layers - 1][1][0]) # number of nodes in previous layer
             
-        weights = np.random.randn(inputs, neurons) / inputs
+        weights = np.random.randn(inputs, neurons) / inputs # we divide by the number of inputs to avoid many inputs giving a huge input value which might slow convergence
         bias = np.zeros((1, neurons)) + 0.01
         
         theta = self._theta.tolist()
         theta.append([weights, bias])
-        self._theta = np.array(theta, dtype=object) # theta is an array filled with nested arrays of different sizes
+        self._theta = np.array(theta, dtype=object) # theta is an array filled with nested arrays of different sizes, so this trickery is required
         
         if activation == "sigmoid":
             self._activations.append(self._sigmoid)
@@ -80,7 +80,7 @@ class FFNN:
         self._feedForward(a_in, theta)
         # setting up gradient "array"
         g = self._g0
-        n = target.shape[0]
+        n = target.shape[0] # numper of input data, for finding mean gradient
         # output layer
         delta = (self._as[-1] - target) * self._diffs[-1](self._zs[-1], self._as[-1]) / n # cost' * activation'
         g[self._layers - 1][0] = self._as[-2].T @ delta  # weight gradient
