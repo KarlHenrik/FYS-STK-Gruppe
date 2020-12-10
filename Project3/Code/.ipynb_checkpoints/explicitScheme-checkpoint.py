@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from mpl_toolkits.mplot3d import axes3d
+from mpl_toolkits.mplot3d import Axes3D
 
 class diffusionSolver():
     
@@ -48,12 +48,15 @@ class diffusionSolver():
         
         T, X = np.meshgrid(self.t, self.x)
         
-        fig = plt.figure(projection='3d')
-        fig.set_title(f'dx = {self._dx}')
-        fig.plot_surface(T, X, self._u, linewidth=0, antialiased=False, cmap=cm.viridis)
-        fig.set_xlabel('Time $t$')
-        fig.set_ylabel('Position $x$')
-        fig.set_zlabel('u')
+        fig = plt.figure()
+        ax = Axes3D(fig)
+        #fig = plt.figure(projection='3d')
+        ax.set_title(f'dx = {self._dx}')
+        ax.plot_surface(T, X, self._u, linewidth=0, antialiased=False, cmap=cm.viridis)
+        ax.set_xlabel('Time $t$')
+        ax.set_ylabel('Position $x$')
+        ax.set_zlabel('u')
+
         
     def quiverplot(self, u):
         self._u = u
