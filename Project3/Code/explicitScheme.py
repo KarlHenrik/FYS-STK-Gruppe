@@ -58,7 +58,7 @@ class diffusionSolver():
         ax.set_zlabel('u')
 
         
-    def quiverplot(self, u):
+    def contourfplot(self, u):
         self._u = u
         
         T, X = np.meshgrid(self.t, self.x)
