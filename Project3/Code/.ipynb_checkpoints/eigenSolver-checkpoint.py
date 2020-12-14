@@ -65,3 +65,31 @@ class EigenSolver():
     def output(self):
         # Output of model
         return self._t_arr, self._x_net()
+    
+    def evaluate(self, biggest = 1):
+        # Extracting eigenvector and value
+        t, x_t = self.output()
+        eig_vec = np.array(x_t[-1, :]) / np.linalg.norm(np.array(x_t[-1, :]))
+        eig_val = np.mean(self._A @ eig_vec / eig_vec)
+        eig_val_std = np.std(self._A @ eig_vec / eig_vec)
+
+        # Analytical eigenvectors and values
+        eigenvalues, v = np.linalg.eig(self._A)
+        eig_vec_anal = v[:,0]
+        eigen_index = np.argmax(eigenvalues)
+        if biggest == 1:
+            eig_val_anal = eigenvalues[eigen_index]
+        else:
+            eig_val *= -1
+            eig_val_anal = -eigenvalues[eigen_index]
+
+        print(f"Eigenvalue = {eig_val:.5f} +- {eig_val_std:.5f}")
+        print(f"Real eigen = {eig_val_anal:5f}, diff = {eig_val - eig_val_anal:.5f}")
+        print(f"Eigenvector =   {eig_vec}")
+        print(f"Real eigenvec = {eig_vec_anal}")
+
+        plt.xlabel("t")
+        plt.ylabel("x(t)")
+        for i in range(len(eig_vec)):
+            plt.plot(t, x_t[:, i], label=rf"$x_{i+1}$")
+        plt.legend()
