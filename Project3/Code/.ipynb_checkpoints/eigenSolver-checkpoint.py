@@ -9,52 +9,49 @@ from tensorflow.keras import optimizers             #This allows using whichever
 tf.keras.backend.set_floatx('float64')
 
 class EigenSolver():
-    def __init__(self, dx, dt, L, time, eta = 0.01):
-        # Setting up data
-        self._Nx = int(L / dx) + 1
-        self._Nt = int(time / dt) + 1
-
-        self._x_np = np.linspace(0, L, self._Nx)
-        self._t_np = np.linspace(0, time, self._Nt)
-
-        X, T = np.meshgrid(self._x_np, self._t_np)
-
-        x = X.ravel()
-        t = T.ravel()
-
-        self._zeros = tf.reshape(tf.convert_to_tensor(np.zeros(x.shape)), shape=(-1,1))
-        self._x = tf.reshape(tf.convert_to_tensor(x), shape=(-1,1))
-        self._t = tf.reshape(tf.convert_to_tensor(t), shape=(-1,1))
+    def __init__(self, A, x0, dt, T, eta = 0.01):
+        self._A = A
+        N = x0.shape[0]
+        x0 /= np.linalg.norm(x0) # normalize
+        self._x0 = tf.reshape(tf.convert_to_tensor(x0, dtype=tf.dtypes.float64), shape=(1, -1)) # row vector, since the NN outputs row vectors
+        
+        Nt = int(T / dt) + 1
+        self._t_arr = np.linspace(0, T, Nt)
+        self._t = tf.reshape(tf.convert_to_tensor(self._t_arr, dtype=tf.dtypes.float64), shape=(-1, 1)) # column vector
+        
+        self._zeros = tf.convert_to_tensor(np.zeros((N, Nt)))
 
         # Setting up model
         self._model = Sequential()
-        self._model.add(Dense(20, activation='sigmoid'))
-        self._model.add(Dense(1, activation="linear"))
-        self._model.build(tf.concat([self._x, self._t], 1).shape)
+        self._model.add(Dense(100, activation='sigmoid'))
+        self._model.add(Dense(50, activation='sigmoid'))
+        self._model.add(Dense(25, activation='sigmoid'))
+        self._model.add(Dense(N, activation="linear"))
+        self._model.build(self._t.shape)
 
-        self._optimizer = optimizers.Adam(lr = eta)
+        self._optimizer = optimizers.Adam(eta)
     
-    def _g_trial(self):
-        return (1 - self._t) * tf.sin(np.pi * self._x) + self._x * (1 - self._x) * self._t * self._model(tf.concat([self._x, self._t], 1))
+    def _x_net(self):
+        return tf.exp(-self._t) @ self._x0 + self._model(self._t) * (1 - tf.exp(-self._t))
     
-    def loss(model, x0, t):
+    def _loss(self):
         with tf.GradientTape() as tape_t:
-            tape_t.watch([t])
-            x_net = tf.exp(-t) @ x0 + model(t) * (1-tf.exp(-t))
-        dx_dt = tape_t.batch_jacobian(x_net, t)[:, :, 0] # This takes the gradient of each element of x for each time step
+            tape_t.watch([self._t])
+            x_net = self._x_net()
+        dx_dt = tape_t.batch_jacobian(x_net, self._t)[:, :, 0] # This takes the gradient of each element of x for each time step
 
         dx_dt = tf.transpose(dx_dt) # We need to transpose, as x_net is a collection of row vectors,
         x_net = tf.transpose(x_net) # but we need a collection of column vectors for the matrix multiplications
 
-        Ax = A @ x_net
+        Ax = self._A @ x_net
         xTx = tf.einsum("ij,ji->i", tf.transpose(x_net), x_net)
         xTAx = tf.einsum("ij,ji->i", tf.transpose(x_net), Ax)
         fx = xTx * Ax + (1 - xTAx) * x_net
 
-        return tf.losses.mean_squared_error(zeros, dx_dt - fx + x_net)
+        return tf.losses.mean_squared_error(self._zeros, dx_dt - fx + x_net)
         
     def train(self, iters):
-        # Training the model bu calculating gradient
+        # Training the model by calculating gradient
         for i in range(iters):
             with tf.GradientTape() as tape:
                 current_loss = self._loss()
@@ -63,8 +60,8 @@ class EigenSolver():
             self._optimizer.apply_gradients(zip(grads, self._model.trainable_variables))
             
         # Output of model
-        return self._x_np, self._t_np, np.array(self._g_trial()).reshape((self._Nt, self._Nx)).T
+        return self._t_arr, self._x_net()
         
     def output(self):
         # Output of model
-        return self._x_np, self._t_np, np.array(self._g_trial()).reshape((self._Nt, self._Nx)).T
+        return self._t_arr, self._x_net()
