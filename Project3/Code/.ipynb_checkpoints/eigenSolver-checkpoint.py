@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 from matplotlib import cm
 from mpl_toolkits.mplot3d import axes3d
 from tensorflow.keras.models import Sequential      #This allows appending layers to existing models
@@ -51,6 +52,7 @@ class EigenSolver():
         return tf.losses.mean_squared_error(self._zeros, dx_dt - fx + x_net)
         
     def train(self, iters):
+        start_time = time.time()
         # Training the model by calculating gradient
         for i in range(iters):
             with tf.GradientTape() as tape:
@@ -58,9 +60,8 @@ class EigenSolver():
 
             grads = tape.gradient(current_loss, self._model.trainable_variables)
             self._optimizer.apply_gradients(zip(grads, self._model.trainable_variables))
-            
-        # Output of model
-        return self._t_arr, self._x_net()
+        total_time = time.time() - start_time
+        print(f"Finished training with a loss of {np.mean(self._loss())} after {total_time//60:.0f}m {total_time%60}s.")
         
     def output(self):
         # Output of model
@@ -75,13 +76,16 @@ class EigenSolver():
 
         # Analytical eigenvectors and values
         eigenvalues, v = np.linalg.eig(self._A)
-        eig_vec_anal = v[:,0]
-        eigen_index = np.argmax(eigenvalues)
         if biggest == 1:
-            eig_val_anal = eigenvalues[eigen_index]
+            eig_index = np.argmax(np.abs(eigenvalues))
+            eig_val_anal = eigenvalues[eig_index]
+            eig_vec_anal = v[:, eig_index]
         else:
             eig_val *= -1
-            eig_val_anal = -eigenvalues[eigen_index]
+            eig_index = np.argmin(np.abs(eigenvalues))
+            eig_val_anal = -eigenvalues[eig_index]
+            eig_vec_anal = v[:, eig_index]
+        eig_vec_anal *= np.sign(eig_vec[0] * eig_vec_anal[0]) # makes eigenvectors not point opposite direction
 
         print(f"Eigenvalue = {eig_val:.5f} +- {eig_val_std:.5f}")
         print(f"Real eigen = {eig_val_anal:5f}, diff = {eig_val - eig_val_anal:.5f}")
@@ -91,5 +95,8 @@ class EigenSolver():
         plt.xlabel("t")
         plt.ylabel("x(t)")
         for i in range(len(eig_vec)):
-            plt.plot(t, x_t[:, i], label=rf"$x_{i+1}$")
+            plt.plot(t , x_t[:, i] / np.linalg.norm(x_t, axis=1), label=rf"$x_{i+1}$")
+        plt.gca().set_prop_cycle(None)
+        for i in range(len(eig_vec)):
+            plt.plot([t[-1] + 0.2], eig_vec_anal[i], marker="D", markersize=4)
         plt.legend()
