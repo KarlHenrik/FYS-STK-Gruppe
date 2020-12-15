@@ -9,7 +9,7 @@ from tensorflow.keras import optimizers             #This allows using whichever
 tf.keras.backend.set_floatx('float64')
 
 class DiffusionTf():
-    def __init__(self, dx, dt, L, time, eta = 0.01):
+    def __init__(self, dx, dt, L, time, eta = 0.01, extraLayer=False):
         # Setting up data
         self._Nx = int(L / dx) + 1
         self._Nt = int(time / dt) + 1
@@ -28,6 +28,8 @@ class DiffusionTf():
 
         # Setting up model
         self._model = Sequential()
+        if extraLayer:
+            self._model.add(Dense(40, activation='sigmoid'))
         self._model.add(Dense(20, activation='sigmoid'))
         self._model.add(Dense(1, activation="linear"))
         self._model.build(tf.concat([self._x, self._t], 1).shape)

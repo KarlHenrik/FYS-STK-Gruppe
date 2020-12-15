@@ -76,22 +76,21 @@ class EigenSolver():
 
         # Analytical eigenvectors and values
         eigenvalues, v = np.linalg.eig(self._A)
+        eig_index = np.argmax(eigenvalues)
         if biggest == 1:
-            eig_index = np.argmax(np.abs(eigenvalues))
             eig_val_anal = eigenvalues[eig_index]
-            eig_vec_anal = v[:, eig_index]
         else:
             eig_val *= -1
-            eig_index = np.argmin(np.abs(eigenvalues))
             eig_val_anal = -eigenvalues[eig_index]
-            eig_vec_anal = v[:, eig_index]
+        eig_vec_anal = v[:, eig_index]
         eig_vec_anal *= np.sign(eig_vec[0] * eig_vec_anal[0]) # makes eigenvectors not point opposite direction
 
         print(f"Eigenvalue = {eig_val:.5f} +- {eig_val_std:.5f}")
         print(f"Real eigen = {eig_val_anal:5f}, diff = {eig_val - eig_val_anal:.5f}")
         print(f"Eigenvector =   {eig_vec}")
         print(f"Real eigenvec = {eig_vec_anal}")
-
+        
+        plt.figure()
         plt.xlabel("t")
         plt.ylabel("x(t)")
         for i in range(len(eig_vec)):

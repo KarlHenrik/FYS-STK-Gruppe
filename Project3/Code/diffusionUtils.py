@@ -5,7 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 def plot2D(x, t, U, funcname):
     dx = x[1] - x[0]
-    
+    fig = plt.figure()
     plt.title(f'{funcname} with dx = {dx}')
     for t_i in [0, int(len(t) * 0.1), int(len(t) * 0.3), int(len(t) * 0.4), int(len(t) * 0.8)]:
         plt.plot(x, U[:, t_i], label = f'Time =  {t[t_i]:0.3f}')
@@ -48,5 +48,7 @@ def error(x, t, U):
     abs_err = np.abs(U_analytic - U)
     max_abs_err = np.amax(abs_err)
     mean_abs_err = np.mean(abs_err)
+    mean_sqr_err = np.mean(abs_err**2)
     print(f"Max abs error: {max_abs_err}")
     print(f"Mean abs error: {mean_abs_err}")
+    print(f"Mean squared error: {mean_sqr_err}")
