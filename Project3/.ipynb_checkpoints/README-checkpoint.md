@@ -15,6 +15,12 @@ Class which lets you create a neural network model specialized to solving the di
 ### eigenSolver.py
 Class which lets you create a neural network model specialized to solving the eigenvalue problem using automatic differentiation. Must be intialized and then trained with a number of iterations. See Eigenvalue.ipynb for use case and syntax.
 
+### Diffusion.ipynb
+Contains all of our runs solving the diffusion equation used in the report. The neural network simulations for dx = 0.01 are missing, due to being overwritten and taking too long to calculate again.
+
+### Eigenvalue.ipynb
+Contains all of our runs solving the eigenvalue problem used in the report. There might be slight differences, but nothing substantial.
+
 ## Report Folder
 
 Contains our report pdf.
